@@ -81,11 +81,21 @@ namespace RingCrisis
             {
                 var velocityXZ = -delta; // ひっぱりと反対方向
 
-                // リングを発射
-                ShootRing(_teamColor, velocityXZ); // <--- FIXME!!!
+                // 発射されたらRPCで同期
+                _rpcManager.SendShootRing(_teamColor, velocityXZ);
 
                 // 軌道ガイドを非表示に
                 _curveObjectTransform.gameObject.SetActive(false);
+            };
+
+
+        }
+
+        private void Start()
+        {
+            _rpcManager.OnReceiveShootRing += (teamColor, dir) =>
+            {
+                ShootRing(teamColor, dir);
             };
         }
 
@@ -103,7 +113,7 @@ namespace RingCrisis
             return velocityXZ * ti + (VelocityY * ti - 0.5f * 9.8f * ti * ti) * Vector3.up;
         }
 
-        private void ShootRing(TeamColor teamColor, Vector3 dir)
+        public void ShootRing(TeamColor teamColor, Vector3 dir)
         {
             var shotSpace = GetShotSpace(teamColor);
 
@@ -120,6 +130,7 @@ namespace RingCrisis
                 Destroy(ring.gameObject);
                 Instantiate(_fxDisappear, target.transform.position, Quaternion.identity);
             });
+
         }
 
         private ShotSpace GetShotSpace(TeamColor teamColor)

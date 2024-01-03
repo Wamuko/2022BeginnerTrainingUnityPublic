@@ -10,28 +10,48 @@ public class Cannon : MonoBehaviour
     GameObject shotPoint;
     [SerializeField]
     GameObject Bullet;
+    [SerializeField]
+    LineRenderer lineRenderer;
+
+    float rotationSpeed = 45.0f; // ????
+    float verticalRotation = 0.0f;
 
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
     void Update()
     {
-        // –C“ƒ‚Ì‰ñ“]
-        if(Input.GetKey(KeyCode.A))
+        // ????????
+        if (Physics.SphereCast(shotPoint.transform.position, Bullet.transform.localScale.x * 0.5f, turret.transform.forward, out RaycastHit hit, 30))
         {
-            turret.transform.localRotation *= Quaternion.Euler(0.0f, -1.0f, 0.0f);
-        }
-        if(Input.GetKey(KeyCode.D))
+            // LineRenderer??
+            lineRenderer.SetPosition(0, shotPoint.transform.position);
+            lineRenderer.SetPosition(1, shotPoint.transform.position + (turret.transform.forward * hit.distance));
+            lineRenderer.gameObject.SetActive(true);
+        } else
         {
-            turret.transform.localRotation *= Quaternion.Euler(0.0f, 1.0f, 0.0f);
+            lineRenderer.gameObject.SetActive(false);
         }
 
-        // ŽËŒ‚
-        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            // ??????????
+            float horizontalInput = Input.GetAxis("Horizontal");
+            turret.transform.Rotate(0, horizontalInput * rotationSpeed * Time.deltaTime, 0, Space.World);
+
+            // ??????????
+            float verticalInput = Input.GetAxis("Vertical");
+            verticalRotation += verticalInput * rotationSpeed * Time.deltaTime;
+            verticalRotation = Mathf.Clamp(verticalRotation, 0.0f, 90.0f);
+
+            // ??????????
+            turret.transform.localEulerAngles = new Vector3(-verticalRotation, turret.transform.localEulerAngles.y, 0);
+        }
+
+        // ????
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             GameObject bullet;
             bullet = Instantiate(Bullet, shotPoint.transform.position, Quaternion.identity);

@@ -48,7 +48,7 @@ namespace RingCrisis
             _playerNameInputField.text = $"player-{Random.Range(100, 1000):D03}";
 
             // デフォルトのルーム名
-            _roomNameInputField.text = $"room-{Random.Range(100, 1000):D03}";
+            _roomNameInputField.text = $"room-111";
 
             _startButton.onClick.AddListener(() => OnStartButtonClicked());
 

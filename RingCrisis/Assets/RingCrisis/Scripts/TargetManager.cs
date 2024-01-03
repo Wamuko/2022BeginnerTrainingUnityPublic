@@ -11,6 +11,7 @@ namespace RingCrisis
     public class TargetManager : MonoBehaviour
     {
         private static readonly float SpawnInterval = 5.0f;
+        private static readonly float LifeTimeBase = 10.0f;
 
         [SerializeField]
         private RpcManager _rpcManager = null;
@@ -21,15 +22,19 @@ namespace RingCrisis
         [SerializeField]
         private GameObject _fxSpawn = null;
 
+        [SerializeField]
+        private GameObject _spawnArea = null;
+
         private bool _activated;
 
         private float _timer;
 
+        private BoxCollider baseCollider;
+
         public void ActivateSpawn()
         {
             _activated = true;
-
-            SpawnTarget();
+            RandomSpawnTarget();
         }
 
         public void DeactivateSpawn()
@@ -42,11 +47,21 @@ namespace RingCrisis
             Assert.IsNotNull(_rpcManager);
             Assert.IsNotNull(_targetPrefab);
             Assert.IsNotNull(_fxSpawn);
+            Assert.IsNotNull(_spawnArea);
+        }
+
+        private void Start()
+        {
+            baseCollider = _spawnArea.GetComponent<BoxCollider>();
+            _rpcManager.OnReceiveTargetCreated += (pos, lifeTime) =>
+            {
+                SpawnTargetLocal(pos, lifeTime);
+            };
         }
 
         private void Update()
         {
-            if (!_activated)
+            if (!_activated || !PhotonNetwork.IsMasterClient)
             {
                 return;
             }
@@ -55,20 +70,30 @@ namespace RingCrisis
             _timer += Time.deltaTime;
             if (_timer > SpawnInterval)
             {
+                RandomSpawnTarget();
                 _timer -= SpawnInterval;
             }
         }
 
-        private void SpawnTarget()
+        private void RandomSpawnTarget()
         {
-            // FIXME!!!
-            SpawnTargetLocal(new Vector3(0, 0, 0));
+            // ランダムな位置を生成
+            Vector3 randomPosition = new Vector3(
+                Random.Range(baseCollider.bounds.min.x, baseCollider.bounds.max.x),
+                0f,
+                Random.Range(baseCollider.bounds.min.z, baseCollider.bounds.max.z)
+            );
+            float lifeTime = LifeTimeBase * Random.Range(0.7f, 1.3f);
+
+            _rpcManager.SendTargetCreated(randomPosition, lifeTime);
         }
 
-        private void SpawnTargetLocal(Vector3 worldPosition)
+        private void SpawnTargetLocal(Vector3 worldPosition, float lifeTime)
         {
-            Instantiate(_targetPrefab, worldPosition, Quaternion.identity);
+            Target newTarget = Instantiate(_targetPrefab, worldPosition, Quaternion.identity);
             Instantiate(_fxSpawn, worldPosition, Quaternion.identity);
+
+            newTarget.LifeTime = lifeTime;
         }
     }
 }

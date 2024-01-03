@@ -10,7 +10,7 @@ namespace RingCrisis
     [DisallowMultipleComponent]
     public class GameManager : MonoBehaviour
     {
-        private static readonly int ScoreToWin = 5;
+        private static readonly int ScoreToWin = 10;
 
         [SerializeField]
         private RoomInfoView _roomInfoView = null;

@@ -45,10 +45,11 @@ public class Cursor : MonoBehaviour
             input.z = 1;
         }
 
-        // Œ»İ‚Ì‰ñ“]‚É“ü—Í‚ğ‰ÁZ
-        Vector3 newAngle = transform.rotation.eulerAngles + (input);
+        var rotX = Quaternion.AngleAxis(input.x, Vector3.right);
+        var rotY = Quaternion.AngleAxis(input.y, Vector3.up);
+        var rotZ = Quaternion.AngleAxis(input.z, Vector3.forward);
 
-        // rotation‚É‘ã“ü
-        transform.rotation = Quaternion.Euler(newAngle);
+        transform.rotation *= rotZ * rotX * rotY ; 
+ 
     }
 }
